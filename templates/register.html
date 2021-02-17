@@ -1,0 +1,24 @@
+{% extends 'base.html' %} {% block title %}Sign Up{% endblock %} {% block content %}
+<div class="col col-md-9 col-lg-6">
+    <form id="register-form" class="user-form" method="POST">
+        {{ form.hidden_tag() }}
+        <!--add type=hidden form fields -->
+
+        <div class="form-group">
+            {{ form.email.label }} {{form.email(class_="form-control")}} {% for error in form.email.errors %} <small class="form-text text-danger">{{ error }}</small>{% endfor %}
+        </div>
+        <div class="form-group">
+            {{ form.password.label }} {{form.password(class_="form-control")}} {% for error in form.password.errors %} <small class="form-text text-danger">{{ error }}</small>{% endfor %}
+        </div>
+        <div class="form-group">
+            {{ form.firstname.label }} {{form.firstname(class_="form-control")}} {% for error in form.firstname.errors %} <small class="form-text text-danger">{{ error }}</small>{% endfor %}
+        </div>
+        <div class="form-group">
+            {{ form.lastname.label }} {{form.lastname(class_="form-control")}} {% for error in form.lastname.errors %} <small class="form-text text-danger">{{ error }}</small>{% endfor %}
+        </div>
+
+        <small class="form-text mb-2">Already signed up? <a href="/login">Login</a></small>
+        <button class='btn btn-primary' type="submit">Register</button>
+    </form>
+</div>
+{% endblock %}
