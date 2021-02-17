@@ -18,7 +18,7 @@ class User(db.Model):
     firstname = db.Column(db.String(50), nullable=True)
     lastname = db.Column(db.String(50), nullable=True)
 
-    searches = db.relationship('Search', backref='user', cascade="all, delete", passive_deletes=True)
+    searches = db.relationship('SavedSearch', backref='user', cascade="all, delete", passive_deletes=True)
 
     @classmethod
     def register(cls, email, password):
@@ -52,16 +52,16 @@ class User(db.Model):
         u = self
         return f"<User - id: {u.id}, username: {u.username},  name: {u.lastname}, {u.firstname}>"
 
-class Search(db.Model):
-    """Search."""
+class SavedSearch(db.Model):
+    """Saved Search."""
 
-    __tablename__ = "searches"
+    __tablename__ = "saved_searches"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer,db.ForeignKey('users.id', ondelete='cascade'))
     name = db.Column(db.String(50), nullable=False)
     use_current_location = db.Column(db.Boolean, nullable=False, default=True)
-    search_string = db.Column(db.Text, nullable=False) #if null indicates use current location first
+    location_search_string = db.Column(db.Text, nullable=False) #if null indicates use current location first
     lon = db.Column(db.Float, nullable=True) #if null indicates use current location first
     lat = db.Column(db.Float, nullable=True) #if null indicates use current location first
     is_default = db.Column(db.Boolean, nullable=False, default=False)

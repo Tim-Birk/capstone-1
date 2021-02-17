@@ -1,6 +1,6 @@
 from flask import Flask, redirect, render_template, flash, session, g
 from flask_debugtoolbar import DebugToolbarExtension
-from models import db, connect_db, User, Search
+from models import db, connect_db, User, SavedSearch
 from forms import RegisterForm, LoginForm
 from secrets import SECRET_KEY
 from sqlalchemy.exc import IntegrityError
