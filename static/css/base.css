@@ -1,14 +1,55 @@
 .flash {
-    border-radius: 5px;
-    padding: 10px;
+  border-radius: 5px;
+  padding: 10px;
 }
 
 .error {
-    background-color: rgb(248, 209, 209);
-    color: rgb(151, 0, 0);
+  background-color: rgb(248, 209, 209);
+  color: rgb(151, 0, 0);
 }
 
 .success {
-    background-color: rgb(212, 255, 225);
-    color: rgb(5, 49, 0);
+  background-color: rgb(212, 255, 225);
+  color: rgb(5, 49, 0);
+}
+
+.marker {
+  display: block;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  text-align: center;
+}
+
+.popup-title {
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.popup-address {
+  margin: 0;
+}
+
+.fa-wheelchair {
+  color: #051df8;
+}
+
+.fa-genderless {
+  color: #dc05f8;
+}
+
+.fa-baby {
+  color: #05b3f8;
+}
+
+.hours-list {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 0;
+}
+
+.mapboxgl-ctrl-geocoder.mapboxgl-ctrl {
+  width: 100%;
+  max-width: none;
 }
