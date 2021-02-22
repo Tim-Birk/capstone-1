@@ -1,1 +1,182 @@
-{% extends 'base.html' %} {% block title %}Search Page{% endblock %} {% block content %} {% endblock %}
+{% extends 'base.html' %} {% block content %}
+
+<div id="search-container" class="col mt-3">
+  <form id="search-form">
+    <div class="d-flex align-items-center mb-3">
+      <div class="dropdown">
+        <button
+          class="btn btn-sm btn-secondary dropdown-toggle"
+          type="button"
+          id="saved-searches"
+          data-toggle="dropdown"
+          aria-haspopup="true"
+          aria-expanded="false"
+        >
+          Saved Searches
+        </button>
+        <div class="dropdown-menu" aria-labelledby="saved-searches">
+          <a class="dropdown-item" href="#">
+            <div class="d-flex align-items-center">
+              Near Home <a href="#" class="mr-2"><i class="fas fa-edit"></i></a>
+            </div>
+          </a>
+          <a class="dropdown-item" href="#">
+            <div class="d-flex align-items-center">
+              Near Worked
+              <a href="#" class="mr-2"><i class="fas fa-edit"></i></a>
+            </div>
+          </a>
+          <a class="dropdown-item" href="#">
+            <div class="d-flex align-items-center">
+              Handicap accessible near Long Beach
+              <a href="#" class="mr-2"><i class="fas fa-edit"></i></a>
+            </div>
+          </a>
+        </div>
+      </div>
+      <div class="form-group form-check ml-2 mb-0">
+        <input
+          type="checkbox"
+          class="form-check-input"
+          id="use-current-location"
+          checked
+        />
+        <label class="form-check-label" for="use-current-location"
+          >Use Current Location</label
+        >
+      </div>
+    </div>
+
+    <div class="form-group collapse" id="location-search-container">
+      <div id="geocoder" class="geocoder"></div>
+    </div>
+
+    <div class="row d-flex justify-content-between">
+      <div class="col col-12 col-md-7 form-group">
+        <div class="form-check form-check-inline">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            id="accessible"
+            value="accessible"
+          />
+          <label class="form-check-label" for="accessible"
+            >Accessible <i class="fas fa-wheelchair"></i
+          ></label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            id="unisex"
+            value="unisex"
+          />
+          <label class="form-check-label" for="unisex"
+            >Unisex <i class="fas fa-genderless"></i
+          ></label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            id="changing-table"
+            value="changing-table"
+          />
+          <label class="form-check-label" for="changing-table"
+            >Changing Table <i class="fas fa-baby"></i
+          ></label>
+        </div>
+      </div>
+
+      <div class="col mb-2 mb-0-md">
+        <div class="d-flex flex-md-row-reverse">
+          <button class="btn btn-sm btn-primary" type="submit">Search</button>
+          <div class="form-check form-check-inline ml-2">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              id="save-search"
+              value="save-search"
+            />
+            <label class="form-check-label" for="save-search"
+              >Save Search</label
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <div id="mobile-spinner-container" class="mb-2"></div>
+  <div
+    id="restroom-container"
+    class="row d-flex flex-column-reverse flex-md-row"
+  >
+    <div id="results-container" class="col">
+      <div id="spinner-container"></div>
+      <ul id="search-results" class="list-group"></ul>
+    </div>
+    <div id="map-container" class="col col-12">
+      <div id="map" style="width: 100%; height: 400px"></div>
+      <div id="menu">
+        <input
+          id="streets-v11"
+          type="radio"
+          name="rtoggle"
+          value="streets"
+          checked="checked"
+        />
+        <label for="streets-v11">streets</label>
+        <input id="light-v10" type="radio" name="rtoggle" value="light" />
+        <label for="light-v10">light</label>
+        <input id="dark-v10" type="radio" name="rtoggle" value="dark" />
+        <label for="dark-v10">dark</label>
+        <input id="outdoors-v11" type="radio" name="rtoggle" value="outdoors" />
+        <label for="outdoors-v11">outdoors</label>
+        <input
+          id="satellite-v9"
+          type="radio"
+          name="rtoggle"
+          value="satellite"
+        />
+        <label for="satellite-v9">satellite</label>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    mapboxgl.accessToken = '{{token}}';
+  </script>
+
+  <div
+    class="modal fade"
+    id="restrooms-modal"
+    tabindex="-1"
+    aria-labelledby="exampleModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span class="modal-title"></span>
+          <button
+            type="button"
+            class="close"
+            data-dismiss="modal"
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
