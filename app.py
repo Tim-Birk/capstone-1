@@ -2,11 +2,7 @@ from flask import Flask, redirect, render_template, flash, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from models import db, connect_db, User, SavedSearch
 from forms import RegisterForm, LoginForm
-<<<<<<< HEAD
-from secrets import SECRET_KEY
-=======
 from secrets import SECRET_KEY, MAPBOX_ACCESS_TOKEN
->>>>>>> deeb590 (Add search page with map functionality and search filters)
 from sqlalchemy.exc import IntegrityError
 
 app = Flask(__name__)
