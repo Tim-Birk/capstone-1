@@ -67,11 +67,7 @@ def search_page():
         flash(f'You must be logged in to view this page.', "error")
         return redirect(f"/login")
 
-<<<<<<< HEAD
-    return render_template("/search.html")
-=======
     return render_template("/search.html", token=MAPBOX_ACCESS_TOKEN)
->>>>>>> deeb590 (Add search page with map functionality and search filters)
 
 @app.route("/register", methods=["GET","POST"])
 def show_register_form():
