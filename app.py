@@ -2,11 +2,7 @@ from flask import Flask, redirect, render_template, flash, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from models import db, connect_db, User, SavedSearch
 from forms import RegisterForm, LoginForm
-<<<<<<< HEAD
-from secrets import SECRET_KEY
-=======
 from secrets import SECRET_KEY, MAPBOX_ACCESS_TOKEN
->>>>>>> feature/createSearchPage
 from sqlalchemy.exc import IntegrityError
 
 app = Flask(__name__)
@@ -71,11 +67,7 @@ def search_page():
         flash(f'You must be logged in to view this page.', "error")
         return redirect(f"/login")
 
-<<<<<<< HEAD
-    return render_template("/search.html")
-=======
     return render_template("/search.html", token=MAPBOX_ACCESS_TOKEN)
->>>>>>> feature/createSearchPage
 
 @app.route("/register", methods=["GET","POST"])
 def show_register_form():
