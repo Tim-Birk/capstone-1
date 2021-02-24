@@ -1,0 +1,22 @@
+{% extends 'base.html' %} {% block title %}Update Profile{% endblock %} {% block
+content %}
+<div class="col col-md-9 col-lg-6 mt-3">
+  <form id="register-form" class="user-form" method="POST">
+    {{ form.hidden_tag() }}
+    <!--add type=hidden form fields -->
+
+    <div class="form-group">
+      {{ form.firstname.label }} {{form.firstname(class_="form-control")}} {%
+      for error in form.firstname.errors %}
+      <small class="form-text text-danger">{{ error }}</small>{% endfor %}
+    </div>
+    <div class="form-group">
+      {{ form.lastname.label }} {{form.lastname(class_="form-control")}} {% for
+      error in form.lastname.errors %}
+      <small class="form-text text-danger">{{ error }}</small>{% endfor %}
+    </div>
+
+    <button class="btn btn-primary" type="submit">Save</button>
+  </form>
+</div>
+{% endblock %}
