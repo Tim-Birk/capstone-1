@@ -25,6 +25,7 @@
 .popup-title {
   font-weight: bold;
   margin-top: 10px;
+  margin-bottom: 0;
 }
 
 .popup-address {
