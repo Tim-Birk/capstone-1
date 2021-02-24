@@ -480,27 +480,33 @@ const addMarkerToMap = (restroom) => {
     .setLngLat(marker.geometry.coordinates)
     .setPopup(
       new mapboxgl.Popup().setHTML(`
-          <p class="popup-title">${name}</p>
+          <p class="popup-title">${name}<span class="float-right font-weight-normal ml-5"><i>${distance.toFixed(
+        2
+      )}mi</i></span></p>
           <p class="popup-address">${street}</p>
           <p class="popup-address">${city}, ${state}</p>
-          <p class="popup-address">${distance.toFixed(2)}mi</p>
-          ${
-            details
-              ? details.opening_hours
-                ? `<span class="mb-0 ${
-                    details.opening_hours.open_now
-                      ? 'text-success'
-                      : 'text-danger'
-                  }">${
-                    details.opening_hours.open_now ? 'Open' : 'Closed'
-                  }</span>`
+          <div class="popup-address">
+            ${
+              details
+                ? details.opening_hours
+                  ? `<span class="mb-0 ${
+                      details.opening_hours.open_now
+                        ? 'text-success'
+                        : 'text-danger'
+                    }">${
+                      details.opening_hours.open_now ? 'Open' : 'Closed'
+                    }</span>`
+                  : ''
                 : ''
-              : ''
-          }
-          ${accessible ? '<i class="fas fa-wheelchair"></i>' : ''}
-          ${unisex ? '<i class="fas fa-genderless"></i>' : ''}
-          ${changing_table ? '<i class="fas fa-baby"></i>' : ''}
-          <a href="#" class="text-small ml-1 float-right" data-toggle="modal" data-target="#restrooms-modal" data-restroom-id="${id}">more info</a>
+            }
+            ${accessible ? '<i class="fas fa-wheelchair"></i>' : ''}
+            ${unisex ? '<i class="fas fa-genderless"></i>' : ''}
+            ${changing_table ? '<i class="fas fa-baby"></i>' : ''}
+          </div>
+          <div class="d-flex justify-content-between">
+            <a href="#" class="text-small" data-toggle="modal" data-target="#restrooms-modal" data-restroom-id="${id}">More</a>
+            <a href="http://www.google.com/maps/place/${latitude},${longitude}" target="blank" class="text-small" data-restroom-id="${id}">Directions</a>
+          </div>  
           `)
     )
     .addTo(MAP);
@@ -543,6 +549,8 @@ const addRestroomLiToDOM = (restroom) => {
     accessible,
     unisex,
     changing_table,
+    latitude,
+    longitude,
   } = restroom;
 
   let li = $(`
@@ -553,19 +561,32 @@ const addRestroomLiToDOM = (restroom) => {
     </div>
     <p class="mb-0">${street}</p>
     <p class="mb-0">${city}, ${state}</p>
-    ${
-      details
-        ? details.opening_hours
-          ? `<small class="mb-0 ${
-              details.opening_hours.open_now ? 'text-success' : 'text-danger'
-            }">${details.opening_hours.open_now ? 'Open' : 'Closed'}</small>`
-          : ''
-        : ''
-    }
-    ${accessible ? '<i class="fas fa-wheelchair"></i>' : ''}
-    ${unisex ? '<i class="fas fa-genderless"></i>' : ''}
-    ${changing_table ? '<i class="fas fa-baby"></i>' : ''}
-    <a href="#" class="text-small float-right" data-toggle="modal" data-target="#restrooms-modal" data-restroom-id="${id}">more info</a>
+    <div class="row">
+      <div class="col col-5 col-md-12 col-xl-5 mt-1">
+        ${
+          details
+            ? details.opening_hours
+              ? `<small class="mb-0 ${
+                  details.opening_hours.open_now
+                    ? 'text-success'
+                    : 'text-danger'
+                }">${
+                  details.opening_hours.open_now ? 'Open' : 'Closed'
+                }</small>`
+              : ''
+            : ''
+        }
+        ${accessible ? '<i class="fas fa-wheelchair"></i>' : ''}
+        ${unisex ? '<i class="fas fa-genderless"></i>' : ''}
+        ${changing_table ? '<i class="fas fa-baby"></i>' : ''}
+      </div>
+      <div class="col mt-1">
+        <div class="float-right float-md-left float-xl-right">
+          <a href="#" class="btn btn-sm btn-primary text-small" data-toggle="modal" data-target="#restrooms-modal" data-restroom-id="${id}">More</a>
+          <a href="http://www.google.com/maps/place/${latitude},${longitude}" target="blank" class="btn btn-sm btn-info text-small" data-restroom-id="${id}">Directions</a>
+        </div>
+      </div>
+    </div>
   </li>
 `);
   $searchResults.append(li);
