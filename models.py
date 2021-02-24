@@ -61,13 +61,33 @@ class SavedSearch(db.Model):
     user_id = db.Column(db.Integer,db.ForeignKey('users.id', ondelete='cascade'))
     name = db.Column(db.String(50), nullable=False)
     use_current_location = db.Column(db.Boolean, nullable=False, default=True)
-    location_search_string = db.Column(db.Text, nullable=False) #if null indicates use current location first
+    location_search_string = db.Column(db.Text, nullable=True) #if null indicates use current location first
     lon = db.Column(db.Float, nullable=True) #if null indicates use current location first
     lat = db.Column(db.Float, nullable=True) #if null indicates use current location first
     is_default = db.Column(db.Boolean, nullable=False, default=False)
     accessible = db.Column(db.Boolean, nullable=False, default=False)
     unisex = db.Column(db.Boolean, nullable=False, default=False)
-    changing_table = db.Column(db.Boolean, nullable=False, default=False)      
+    changing_table = db.Column(db.Boolean, nullable=False, default=False)     
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'name': self.name,
+            'use_current_location': self.use_current_location,
+            'location_search_string': self.location_search_string,
+            'lon': self.lon,
+            'lat': self.lat,
+            'is_default': self.is_default,
+            'accessible': self.accessible,
+            'unisex': self.unisex,
+            'changing_table': self.changing_table
+        } 
+    
+    @classmethod
+    def get_default(cls, user_id):
+        """Get default saved search for user in database"""
+        return cls.query.filter_by(is_default=True, user_id=user_id).first()
 
 def connect_db(app):
     """Connect to database."""

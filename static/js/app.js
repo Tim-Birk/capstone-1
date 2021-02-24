@@ -1,5 +1,5 @@
 const LG_SCREEN_BRKPT = 750;
-const NUM_RESULTS = 4;
+const NUM_RESULTS = 5;
 let CURRENT_LAT;
 let CURRENT_LON;
 let GEOCODER;
@@ -7,10 +7,19 @@ let MAP;
 let CURRENT_MARKERS = [];
 let RESTROOM_RESULTS = new Map();
 
+const $sidebar = $('#sidebar');
+const $saveSearchesContainer = $('#saved-searches-container');
 const $restroomContainer = $('#restroom-container');
 const $mobileSpinnerContainer = $('#mobile-spinner-container');
 const $spinnerContainer = $('#spinner-container');
+const $searchesList = $('#searches-list');
+const $toggleSavedSearchesButton = $('#menu-toggle');
 const $useCurrentLocation = $('#use-current-location');
+const $saveSearchCheckbox = $('#save-search');
+const $saveSearchModalButton = $('#save-search-button');
+const $searchName = $('#search-name');
+const $defaultSearch = $('#default-search');
+const $searchButton = $('#search-button');
 const $filterAccessible = $('#accessible');
 const $filterUnisex = $('#unisex');
 const $filterChangingTable = $('#changing-table');
@@ -19,56 +28,290 @@ const $mapContainer = $('#map-container');
 const $resultsContainer = $('#results-container');
 const $searchResults = $('#search-results');
 const $geocoderDiv = $('#geocoder');
+const $editSavedSearchButton = $('#edit-save-search-button');
+const $deleteSavedSearchButton = $('#delete-save-search-button');
+const $editSearchName = $('#edit-search-name');
+const $editDefaultSearch = $('#edit-default-search');
+const $editAccessible = $('#edit-accessible');
+const $editUnisex = $('#edit-unisex');
+const $editChangingTable = $('#edit-changing-table');
 
-$useCurrentLocation.on('click', (evt) => {
-  initializeMap();
+// use current location checkbox event handler
+$useCurrentLocation.on('click', handleUseCurrentLocationChange);
 
+// save search checkbox event handler
+$saveSearchCheckbox.on('change', (evt) => {
   if ($(evt.target)[0].checked) {
-    $locationSearchContainer.addClass('collapse');
+    $searchButton.attr('data-target', '#saved-search-modal');
   } else {
-    $locationSearchContainer.removeClass('collapse');
+    $searchButton.attr('data-target', '');
   }
 });
 
-$('#search-form').on('submit', async (evt) => {
+// search button event handler
+$searchButton.on('click', (evt) => {
   evt.preventDefault();
-  // clear previous search results
-  $searchResults.empty();
 
-  showLoadingSpinner();
-
-  // Clear existing results in global list
-  RESTROOM_RESULTS.clear();
-
-  // Clear existing markers from map
-  clearMapMarkers();
-
-  const coordinates = getCoordinates();
-
-  // move map over to display search results next to it on larger devices
-  $mapContainer.addClass('col-md-8');
-
-  // recenter the map to account for shift on larger devices
-  if ($(window).width() > LG_SCREEN_BRKPT) {
-    MAP.flyTo({
-      center: [coordinates.lon + 0.05, coordinates.lat],
-      essential: true, // this animation is considered essential with respect to prefers-reduced-motion
-    });
+  if ($saveSearchCheckbox.is(':checked')) {
+    $searchName.val('');
+    return;
   }
-  await getRestrooms(coordinates.lat, coordinates.lon);
-
-  hideLoadingSpinner();
-
-  handleNoResults();
+  handleGetSearchResults();
 });
 
-$('#search-container').on('click', 'a', async function handleSearch(evt) {
+// more info button event handler to open restrooms modal
+$('#search-container').on('click', 'a', async (evt) => {
   const id = $(evt.target).attr('data-restroom-id');
   if (!id) return;
 
   const restroom = RESTROOM_RESULTS.get(Number(id));
   showRestroomModal(restroom);
 });
+
+// save search button event handler on saved search modal
+$saveSearchModalButton.on('click', async (evt) => {
+  if ($searchName.val() == '') {
+    alert('Enter a Search Name');
+    return;
+  }
+
+  const name = $searchName.val();
+  const use_current_location = $useCurrentLocation.is(':checked');
+  const coordinates = getCoordinates();
+  const lon = coordinates.lon;
+  const lat = coordinates.lat;
+
+  let location_search_string = '';
+  if (!use_current_location) {
+    let result = JSON.parse(GEOCODER.lastSelected);
+    location_search_string = result.place_name;
+  }
+  const is_default = $defaultSearch.is(':checked');
+  const accessible = $filterAccessible.is(':checked');
+  const unisex = $filterUnisex.is(':checked');
+  const changing_table = $filterChangingTable.is(':checked');
+
+  const savedSearch = {
+    name,
+    use_current_location,
+    lon,
+    lat,
+    location_search_string,
+    is_default,
+    accessible,
+    unisex,
+    changing_table,
+  };
+
+  const resp = await axios.post(`/search/add`, savedSearch);
+  const newSavedSearch = resp.data.saved_search;
+  console.log(newSavedSearch);
+
+  if (!newSavedSearch) {
+    return;
+  }
+
+  $saveSearchCheckbox.prop('checked', false);
+  $searchButton.attr('data-target', '');
+
+  // add saved search to sidebar list
+  const searchListItem = $(`
+  <a
+    href="#"
+    class="list-group-item list-group-item-action bg-light"
+    data-search-id="${newSavedSearch.id}"
+  >
+    ${newSavedSearch.name}
+  </a>
+`);
+
+  $searchesList.append(searchListItem);
+
+  handleGetSearchResults();
+});
+
+// toggles save search sidebar on click event
+$toggleSavedSearchesButton.on('click', async (evt) => {
+  evt.preventDefault(evt);
+  $('#wrapper').toggleClass('toggled');
+});
+
+// populates search filters with saved search that is clicked
+$searchesList.on('click', 'a', async (evt) => {
+  $saveSearchesContainer.children('.dropdown').remove();
+  const search_id = $(evt.target).attr('data-search-id');
+
+  const resp = await axios.get(`/search/${search_id}`);
+  const savedSearch = resp.data.saved_search;
+  console.log(savedSearch);
+  populateSearchFilters(savedSearch);
+  $('#wrapper').toggleClass('toggled');
+});
+
+// saved search event handler for opening edit/delete modal
+$saveSearchesContainer.on('click', '#saved-search-edit', async (evt) => {
+  const id = $(evt.target).attr('data-search-id');
+  if (!id) return;
+  const resp = await axios.get(`/search/${id}`);
+  const savedSearch = resp.data.saved_search;
+
+  showEditSavedSearchModal(savedSearch);
+});
+
+// save search button event handler on edit saved search modal
+$editSavedSearchButton.on('click', async (evt) => {
+  const id = $(evt.target)
+    .closest('#edit-saved-search-modal')
+    .attr('data-search-id');
+  if (!id) return;
+
+  if ($editSearchName.val() == '') {
+    alert('Enter a Search Name');
+    return;
+  }
+
+  const name = $editSearchName.val();
+  const is_default = $editDefaultSearch.is(':checked');
+  const accessible = $editAccessible.is(':checked');
+  const unisex = $editUnisex.is(':checked');
+  const changing_table = $editChangingTable.is(':checked');
+
+  const savedSearch = {
+    name,
+    is_default,
+    accessible,
+    unisex,
+    changing_table,
+  };
+
+  const resp = await axios.post(`/search/${id}`, savedSearch);
+  const updatedSavedSearch = resp.data.saved_search;
+  console.log(updatedSavedSearch);
+
+  if (!updatedSavedSearch) {
+    return;
+  }
+
+  // reload form after update to display flash message from server
+  location.reload();
+});
+
+// delete search event handler for opening delete modal
+$saveSearchesContainer.on('click', '#saved-search-delete', async (evt) => {
+  const id = $(evt.target).attr('data-search-id');
+  if (!id) return;
+  $('#delete-saved-search-modal').attr('data-search-id', id);
+});
+
+// delete search button event handler on edit saved search modal
+$deleteSavedSearchButton.on('click', async (evt) => {
+  const id = $(evt.target)
+    .closest('#delete-saved-search-modal')
+    .attr('data-search-id');
+  if (!id) return;
+
+  await axios.delete(`/search/${id}`);
+
+  // reload form after update to display flash message from server
+  location.reload();
+});
+
+const fillDefaultSearch = async () => {
+  const search_id = $('#search-form').attr('data-default-id');
+  if (!search_id) {
+    return;
+  }
+  const resp = await axios.get(`/search/${search_id}`);
+  const savedSearch = resp.data.saved_search;
+
+  populateSearchFilters(savedSearch);
+};
+
+const populateSearchFilters = (savedSearch) => {
+  const {
+    id,
+    name,
+    accessible,
+    unisex,
+    changing_table,
+    use_current_location,
+    location_search_string,
+  } = savedSearch;
+
+  $useCurrentLocation.prop('checked', use_current_location);
+  handleUseCurrentLocationChange();
+
+  if (location_search_string) {
+    GEOCODER.query(location_search_string);
+  }
+
+  $filterAccessible.prop('checked', accessible);
+  $filterUnisex.prop('checked', unisex);
+  $filterChangingTable.prop('checked', changing_table);
+
+  const $savedSearchOptions = `
+        <div class="col dropdown d-flex flex-md-row-reverse">
+          <button
+            class="btn btn-sm btn-secondary dropdown-toggle"
+            type="button"
+            id="saved-search-options"
+            data-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false"
+          >
+            ${name}
+          </button>
+          <div class="dropdown-menu" aria-labelledby="saved-search-options">
+              <a id="saved-search-edit" class="dropdown-item text-primary" data-toggle="modal" data-target="#edit-saved-search-modal" data-search-id="${id}" href="#">
+                Edit
+              </a>
+              <a id="saved-search-delete" class="dropdown-item text-danger" data-toggle="modal" data-target="#delete-saved-search-modal"data-search-id="${id}" href="#">
+                Delete
+              </a>
+            </div>
+          </div>
+        </div>
+      `;
+
+  $saveSearchesContainer.append($savedSearchOptions);
+};
+
+function handleUseCurrentLocationChange() {
+  refreshMap(CURRENT_LAT, CURRENT_LON);
+
+  if ($useCurrentLocation.is(':checked')) {
+    $locationSearchContainer.addClass('collapse');
+  } else {
+    $locationSearchContainer.removeClass('collapse');
+  }
+}
+
+const handleGetSearchResults = async () => {
+  // clear previous search results
+  $searchResults.empty();
+
+  showLoadingSpinner();
+
+  // clear existing results in global list of restroom results
+  RESTROOM_RESULTS.clear();
+
+  // clear existing markers from map
+  clearMapMarkers();
+
+  // get coordinates based on current search criteria
+  const coordinates = getCoordinates();
+
+  adjustMapForDeviceSize(coordinates.lat, coordinates.lon);
+
+  // move map over to display search results next to it on larger devices
+  $mapContainer.addClass('col-md-8');
+
+  await getRestrooms(coordinates.lat, coordinates.lon);
+
+  hideLoadingSpinner();
+
+  handleNoResults();
+};
 
 const showLoadingSpinner = () => {
   // remove existing spinner (if restart)
@@ -180,6 +423,11 @@ const getRestrooms = async (lat, lon) => {
         // add to search results list
         addRestroomLiToDOM(restroom);
 
+        // after 3 results are added, hide spinner
+        if (RESTROOM_RESULTS.size === 3) {
+          hideLoadingSpinner();
+        }
+
         // check if requested number of results has been met
         if (RESTROOM_RESULTS.size === NUM_RESULTS) {
           break;
@@ -252,7 +500,7 @@ const addMarkerToMap = (restroom) => {
           ${accessible ? '<i class="fas fa-wheelchair"></i>' : ''}
           ${unisex ? '<i class="fas fa-genderless"></i>' : ''}
           ${changing_table ? '<i class="fas fa-baby"></i>' : ''}
-          <a href="#" class="text-small float-right" data-toggle="modal" data-target="#restrooms-modal" data-restroom-id="${id}">more info</a>
+          <a href="#" class="text-small ml-1 float-right" data-toggle="modal" data-target="#restrooms-modal" data-restroom-id="${id}">more info</a>
           `)
     )
     .addTo(MAP);
@@ -264,6 +512,21 @@ const clearMapMarkers = () => {
     for (let i = CURRENT_MARKERS.length - 1; i >= 0; i--) {
       CURRENT_MARKERS[i].remove();
     }
+  }
+};
+
+const adjustMapForDeviceSize = (lat, lon) => {
+  // recenter the map to account for shift on larger devices
+  if ($(window).width() > LG_SCREEN_BRKPT) {
+    // if no col-md-8 class exists, this is the inital shift, so adjust lon to accout for map shift to right
+    const flyToLon = $mapContainer.hasClass('col-md-8')
+      ? lon // shift already happened, don't adjust
+      : lon + 0.05; // initial shift
+
+    MAP.flyTo({
+      center: [flyToLon, lat],
+      essential: true, // this animation is considered essential with respect to prefers-reduced-motion
+    });
   }
 };
 
@@ -315,24 +578,24 @@ const setCurrentLocation = () => {
 
   if (!navigator.geolocation) {
     console.log('Geolocation is not supported by your browser');
-    initializeMap();
+    initializeMap(CURRENT_LAT, CURRENT_LON);
   } else {
     navigator.geolocation.getCurrentPosition((pos) => {
       CURRENT_LAT = pos.coords.latitude;
       CURRENT_LON = pos.coords.longitude;
-      initializeMap();
+      initializeMap(CURRENT_LAT, CURRENT_LON);
     });
   }
 };
 
-const initializeMap = () => {
+const initializeMap = (lat, lon) => {
   $geocoderDiv.empty();
 
   MAP = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/streets-v11',
     zoom: 11,
-    center: [CURRENT_LON, CURRENT_LAT],
+    center: [lon, lat],
   });
 
   let nav = new mapboxgl.NavigationControl();
@@ -356,7 +619,7 @@ const initializeMap = () => {
 
   // add marker to map
   new mapboxgl.Marker(el)
-    .setLngLat([CURRENT_LON, CURRENT_LAT])
+    .setLngLat([lon, lat])
     .setPopup(
       new mapboxgl.Popup().setHTML(
         `<p class="popup-title">Current Location</p>`
@@ -377,9 +640,43 @@ const initializeMap = () => {
   }
 };
 
+const refreshMap = (lat, lon) => {
+  $geocoderDiv.empty();
+
+  MAP.zoom = 11;
+  MAP.center = [lon, lat];
+
+  GEOCODER = new MapboxGeocoder({
+    accessToken: mapboxgl.accessToken,
+    mapboxgl: mapboxgl,
+    zoom: 11,
+  });
+
+  document.getElementById('geocoder').appendChild(GEOCODER.onAdd(MAP));
+  var el = document.createElement('div');
+  el.className = 'marker';
+  el.innerHTML = '<i class="fas fa-map-marker-alt"></i>';
+  el.style.backgroundColor = 'orange';
+  el.style.color = '#fff';
+  el.style.width = '20px';
+  el.style.height = '20px';
+
+  // add marker to map
+  new mapboxgl.Marker(el)
+    .setLngLat([lon, lat])
+    .setPopup(
+      new mapboxgl.Popup().setHTML(
+        `<p class="popup-title">Current Location</p>`
+      )
+    )
+    .addTo(MAP);
+
+  adjustMapForDeviceSize(lat, lon);
+};
+
 const showRestroomModal = (restroom) => {
-  $('.modal-title').empty();
-  $('.modal-body').empty();
+  $('#restrooms-modal .modal-title').empty();
+  $('#restrooms-modal .modal-body').empty();
 
   const {
     name,
@@ -468,18 +765,56 @@ const showRestroomModal = (restroom) => {
     }
   }
 
-  $('.modal-title').append($name);
-  $('.modal-title').append($address);
+  $('#restrooms-modal .modal-title').append($name);
+  $('#restrooms-modal .modal-title').append($address);
 
   $openNow && $descriptors.prepend($openNow);
   $topInfo.append($descriptors);
   $phone && $topInfo.append($phone);
-  $('.modal-body').append($topInfo);
-  $hours && $('.modal-body').append($hours);
-  $businessStatus && $('.modal-body').append($businessStatus);
-  $('.modal-body').append($directions);
-  $('.modal-body').append($comment);
+  $('#restrooms-modal .modal-body').append($topInfo);
+  $hours && $('#restrooms-modal .modal-body').append($hours);
+  $businessStatus && $('#restrooms-modal .modal-body').append($businessStatus);
+  $('#restrooms-modal .modal-body').append($directions);
+  $('#restrooms-modal .modal-body').append($comment);
+};
+
+const hideSidebarOnSmallerDevices = () => {
+  if ($(window).width() < LG_SCREEN_BRKPT) {
+    $sidebar.toggleClass('toggled');
+  }
+};
+
+const showEditSavedSearchModal = (savedSearch) => {
+  const {
+    id,
+    name,
+    is_default,
+    accessible,
+    unisex,
+    changing_table,
+    use_current_location,
+    location_search_string,
+  } = savedSearch;
+
+  $('#edit-saved-search-modal .modal-title').children('i').empty();
+  $('#edit-saved-search-modal').attr('data-search-id', `${id}`);
+
+  const $location = $(
+    `<i>${
+      use_current_location ? 'Current Location' : location_search_string
+    }</i>`
+  );
+
+  $editSearchName.val(name);
+  $('#edit-saved-search-modal .modal-title').append($location);
+
+  $editDefaultSearch.prop('checked', is_default);
+  $editAccessible.prop('checked', accessible);
+  $editUnisex.prop('checked', unisex);
+  $editChangingTable.prop('checked', changing_table);
 };
 
 // Initialize values
 $(setCurrentLocation());
+$(hideSidebarOnSmallerDevices());
+$(fillDefaultSearch());
