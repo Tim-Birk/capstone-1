@@ -10,6 +10,7 @@
       integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2"
       crossorigin="anonymous"
     />
+
     <script
       src="https://kit.fontawesome.com/dd61d4c73e.js"
       crossorigin="anonymous"
@@ -20,6 +21,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/static/css/base.css" />
+    <link rel="stylesheet" href="/static/css/sidebar.css" />
   </head>
 
   <body>
@@ -81,16 +83,41 @@
         </div>
       </div>
     </nav>
-    <main class="container">
-      {% with messages = get_flashed_messages(with_categories=true) %} {% if
-      messages %}
-      <section class="messages mt-3">
-        {% for category, message in messages %}
-        <p class="flash {{category}}">{{message}}</p>
-        {% endfor %}
-      </section>
-      {% endif %} {% endwith %} {% block content %} {% endblock %}
-    </main>
+    <div class="d-flex toggled" id="wrapper">
+      <!-- Sidebar -->
+      {% if g.user %}
+      <div class="bg-light border-right" id="sidebar-wrapper">
+        <div class="sidebar-heading">Saved Searches</div>
+        <div id="searches-list" class="list-group list-group-flush">
+          {% for search in g.user.searches %}
+          <a
+            href="#"
+            class="list-group-item list-group-item-action bg-light"
+            data-search-id="{{search.id}}"
+          >
+            {{search.name}}
+          </a>
+
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+      <!-- /#sidebar-wrapper -->
+
+      <!-- Page Content -->
+      <div id="page-content-wrapper">
+        <main class="container">
+          {% with messages = get_flashed_messages(with_categories=true) %} {% if
+          messages %}
+          <section class="messages mt-3">
+            {% for category, message in messages %}
+            <p class="flash {{category}}">{{message}}</p>
+            {% endfor %}
+          </section>
+          {% endif %} {% endwith %} {% block content %} {% endblock %}
+        </main>
+      </div>
+    </div>
     <script src="https://unpkg.com/axios/dist/axios.js"></script>
     <script
       src="https://code.jquery.com/jquery-3.5.1.slim.min.js"

@@ -1,49 +1,35 @@
 {% extends 'base.html' %} {% block content %}
 
 <div id="search-container" class="col mt-3">
-  <form id="search-form">
-    <div class="d-flex align-items-center mb-3">
-      <div class="dropdown">
-        <button
-          class="btn btn-sm btn-secondary dropdown-toggle"
-          type="button"
-          id="saved-searches"
-          data-toggle="dropdown"
-          aria-haspopup="true"
-          aria-expanded="false"
-        >
+  <div
+    id="search-form"
+    {%
+    if
+    default
+    %}data-default-id="{{default.id}}"
+    {%
+    endif
+    %}
+  >
+    <div
+      id="saved-searches-container"
+      class="row d-flex align-items-center justify-content-between mb-2"
+    >
+      <div class="col col-12 col-md-7 d-flex align-items-center mb-1">
+        <button class="btn btn-sm btn-info" type="button" id="menu-toggle">
           Saved Searches
         </button>
-        <div class="dropdown-menu" aria-labelledby="saved-searches">
-          <a class="dropdown-item" href="#">
-            <div class="d-flex align-items-center">
-              Near Home <a href="#" class="mr-2"><i class="fas fa-edit"></i></a>
-            </div>
-          </a>
-          <a class="dropdown-item" href="#">
-            <div class="d-flex align-items-center">
-              Near Worked
-              <a href="#" class="mr-2"><i class="fas fa-edit"></i></a>
-            </div>
-          </a>
-          <a class="dropdown-item" href="#">
-            <div class="d-flex align-items-center">
-              Handicap accessible near Long Beach
-              <a href="#" class="mr-2"><i class="fas fa-edit"></i></a>
-            </div>
-          </a>
+        <div class="form-group form-check ml-2 mb-0">
+          <input
+            type="checkbox"
+            class="form-check-input"
+            id="use-current-location"
+            checked
+          />
+          <label class="form-check-label" for="use-current-location"
+            >Use Current Location</label
+          >
         </div>
-      </div>
-      <div class="form-group form-check ml-2 mb-0">
-        <input
-          type="checkbox"
-          class="form-check-input"
-          id="use-current-location"
-          checked
-        />
-        <label class="form-check-label" for="use-current-location"
-          >Use Current Location</label
-        >
       </div>
     </div>
 
@@ -90,7 +76,14 @@
 
       <div class="col mb-2 mb-0-md">
         <div class="d-flex flex-md-row-reverse">
-          <button class="btn btn-sm btn-primary" type="submit">Search</button>
+          <button
+            id="search-button"
+            class="btn btn-sm btn-primary"
+            type="submit"
+            data-toggle="modal"
+          >
+            Search
+          </button>
           <div class="form-check form-check-inline ml-2">
             <input
               class="form-check-input"
@@ -105,7 +98,7 @@
         </div>
       </div>
     </div>
-  </form>
+  </div>
 
   <div id="mobile-spinner-container" class="mb-2"></div>
   <div
@@ -152,7 +145,7 @@
     class="modal fade"
     id="restrooms-modal"
     tabindex="-1"
-    aria-labelledby="exampleModalLabel"
+    aria-labelledby="restrooms"
     aria-hidden="true"
   >
     <div class="modal-dialog modal-dialog-scrollable">
@@ -177,6 +170,197 @@
       </div>
     </div>
   </div>
-</div>
 
+  <div
+    class="modal fade"
+    id="saved-search-modal"
+    tabindex="-1"
+    aria-labelledby="saved-search"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Save Search</h5>
+          <button
+            type="button"
+            class="close"
+            data-dismiss="modal"
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form>
+            <div class="form-group">
+              <label for="search-name">Search Name</label>
+              <input
+                type="text"
+                class="form-control"
+                id="search-name"
+                required
+              />
+            </div>
+            <div class="form-group form-check">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                id="default-search"
+              />
+              <label class="form-check-label" for="default-search"
+                >Default search to use</label
+              >
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            Close
+          </button>
+          <button
+            id="save-search-button"
+            type="button"
+            class="btn btn-primary"
+            data-dismiss="modal"
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="modal fade"
+    id="edit-saved-search-modal"
+    tabindex="-1"
+    aria-labelledby="edit-saved-search-modal"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title">
+            <h5>Edit Saved Search</h5>
+          </div>
+          <button
+            type="button"
+            class="close"
+            data-dismiss="modal"
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form>
+            <div class="form-group">
+              <label for="edit-search-name">Search Name</label>
+              <input
+                type="text"
+                class="form-control"
+                id="edit-search-name"
+                required
+              />
+            </div>
+            <div class="form-group form-check">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                id="edit-default-search"
+              />
+              <label class="form-check-label" for="default-search"
+                >Default search to use</label
+              >
+            </div>
+            <div class="form-group form-check">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                id="edit-accessible"
+              />
+              <label class="form-check-label" for="edit-accessible"
+                >Accessible</label
+              >
+            </div>
+            <div class="form-group form-check">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                id="edit-unisex"
+              />
+              <label class="form-check-label" for="edit-unisex">Unisex</label>
+            </div>
+            <div class="form-group form-check">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                id="edit-changing-table"
+              />
+              <label class="form-check-label" for="edit-changing-table"
+                >Changing Table</label
+              >
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            Close
+          </button>
+          <a
+            id="edit-save-search-button"
+            type="button"
+            class="btn btn-primary"
+            data-dismiss="modal"
+          >
+            Save
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="modal fade"
+    id="delete-saved-search-modal"
+    tabindex="-1"
+    aria-labelledby="delete-saved-search-modal"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title">
+            <h5>Delete Saved Search</h5>
+          </div>
+          <button
+            type="button"
+            class="close"
+            data-dismiss="modal"
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to delete this Saved Search?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            Close
+          </button>
+          <a
+            id="delete-save-search-button"
+            type="button"
+            class="btn btn-danger"
+            data-dismiss="modal"
+          >
+            Delete
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
