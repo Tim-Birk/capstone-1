@@ -20,13 +20,26 @@ class User(db.Model):
 
     searches = db.relationship('SavedSearch', backref='user', cascade="all, delete", passive_deletes=True)
 
+    def __repr__(self):
+        """Show info about user."""
+
+        u = self
+        return f"<User - id: {u.id}, email: {u.email},  name: {u.lastname}, {u.firstname}>"
+
     @classmethod
-    def register(cls, email, password):
+    def register(cls, email, password, firstname, lastname):
         """Register user w/hashed password & return user."""
 
-        hashed = bcrypt.generate_password_hash(password)
-        # turn bytestring into normal (unicode utf8) string
-        hashed_utf8 = hashed.decode("utf8")
+        hashed_pwd = bcrypt.generate_password_hash(password).decode("utf8")
+        user = User(
+            email=email,
+            password=hashed_pwd,
+            firstname=firstname,
+            lastname=lastname
+        )
+
+        db.session.add(user)
+        return user
 
         # return instance of user w/username and hashed pwd
         return cls(email=email, password=hashed_utf8)
@@ -46,12 +59,6 @@ class User(db.Model):
         else:
             return False
 
-    def __repr__(self):
-        """Show info about user."""
-
-        u = self
-        return f"<User - id: {u.id}, username: {u.username},  name: {u.lastname}, {u.firstname}>"
-
 class SavedSearch(db.Model):
     """Saved Search."""
 
@@ -68,6 +75,12 @@ class SavedSearch(db.Model):
     accessible = db.Column(db.Boolean, nullable=False, default=False)
     unisex = db.Column(db.Boolean, nullable=False, default=False)
     changing_table = db.Column(db.Boolean, nullable=False, default=False)     
+
+    def __repr__(self):
+        """Show info about the saved search."""
+
+        s = self
+        return f"<SavedSearch - id: {s.id}, user_id: {s.user.id},  name: {s.name}>"
 
     def serialize(self):
         return {

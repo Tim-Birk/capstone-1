@@ -127,7 +127,7 @@ def get_saved_search(id):
         flash(f'You do not have permisson to do that.', "error")
         return redirect(f"/search")
 
-    return jsonify(saved_search=saved_search.serialize())
+    return (jsonify(saved_search=saved_search.serialize()), 201)
 
 @app.route("/search/<int:id>", methods=["POST"])
 def edit_saved_search(id):
@@ -156,7 +156,7 @@ def edit_saved_search(id):
 
     db.session.commit()
     flash(f"Updated saved search: {saved_search.name}","success")
-    return (jsonify(saved_search=saved_search.serialize()), 200)
+    return (jsonify(saved_search=saved_search.serialize()), 201)
 
 @app.route("/search/<int:id>", methods=["DELETE"])
 def delete_saved_search(id):
@@ -200,15 +200,13 @@ def show_register_form():
         password = form.password.data
         firstname = form.firstname.data
         lastname = form.lastname.data
-
-        new_user = User.register(email, password)
-        new_user.email = email
-        new_user.firstname = firstname
-        new_user.lastname = lastname
-
-        db.session.add(new_user)
-        
         try:
+            new_user = User.register(
+                email, 
+                password, 
+                firstname, 
+                lastname
+            )
             db.session.commit()
         except IntegrityError as e:
             errorInfo = e.orig.args
