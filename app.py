@@ -2,7 +2,11 @@ from flask import Flask, redirect, render_template, flash, session, g, request, 
 from flask_debugtoolbar import DebugToolbarExtension
 from models import db, connect_db, User, SavedSearch
 from forms import RegisterForm, LoginForm, UserEditForm
-from secrets import SECRET_KEY, MAPBOX_ACCESS_TOKEN
+try:
+    from secrets import SECRET_KEY, MAPBOX_ACCESS_TOKEN
+except Exception as e:
+    print(e)
+
 from sqlalchemy.exc import IntegrityError
 import os
 
