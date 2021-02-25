@@ -1,5 +1,5 @@
 const LG_SCREEN_BRKPT = 750;
-const NUM_RESULTS = 5;
+const NUM_RESULTS = 10;
 let CURRENT_LAT;
 let CURRENT_LON;
 let GEOCODER;
@@ -25,6 +25,7 @@ const $filterUnisex = $('#unisex');
 const $filterChangingTable = $('#changing-table');
 const $locationSearchContainer = $('#location-search-container');
 const $mapContainer = $('#map-container');
+const $mapElement = $('#map');
 const $resultsContainer = $('#results-container');
 const $searchResults = $('#search-results');
 const $geocoderDiv = $('#geocoder');
@@ -305,6 +306,8 @@ const handleGetSearchResults = async () => {
 
   // move map over to display search results next to it on larger devices
   $mapContainer.addClass('col-md-8');
+  $mapContainer.addClass('map-large');
+  $mapElement.addClass('map-large');
 
   await getRestrooms(coordinates.lat, coordinates.lon);
 
@@ -319,18 +322,24 @@ const showLoadingSpinner = () => {
   $spinnerContainer.children().remove();
   $searchResults.hide();
 
-  // create a spinner
-  const $spinner = $(`
-          <div id="spinner" class="d-flex justify-content-center mt-5">
-              <div class="spinner-border text-primary" style="width: 5rem; height: 5rem;" role="status">
-              <span class="sr-only">Loading...</span>
-              </div>
-          </div>`);
-
   // for smaller devices display spinner at the above the map
   if ($(window).width() < LG_SCREEN_BRKPT) {
+    // create a spinner
+    const $spinner = $(`
+      <div id="spinner" class="d-flex justify-content-center mt-2">
+          <div class="spinner-border text-primary" style="width: 2rem; height: 2rem;" role="status">
+          <span class="sr-only">Loading...</span>
+          </div>
+      </div>`);
+
     $mobileSpinnerContainer.append($spinner);
   } else {
+    const $spinner = $(`
+      <div id="spinner" class="d-flex justify-content-center mt-5">
+          <div class="spinner-border text-primary" style="width: 5rem; height: 5rem;" role="status">
+          <span class="sr-only">Loading...</span>
+          </div>
+      </div>`);
     // for larger devices show spinner where search results will appear on left hand side
     $spinnerContainer.append($spinner);
   }
@@ -664,7 +673,6 @@ const initializeMap = (lat, lon) => {
 const refreshMap = (lat, lon) => {
   $geocoderDiv.empty();
 
-  MAP.zoom = 11;
   MAP.center = [lon, lat];
 
   GEOCODER = new MapboxGeocoder({

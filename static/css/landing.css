@@ -1,0 +1,22 @@
+#hero-container {
+  padding: 135px 0;
+  background-color: #4e73df;
+}
+
+section {
+  padding: 150px 0;
+}
+
+.hero-text {
+  max-width: 800px;
+  margin: 0 auto 1rem;
+}
+
+#register-button {
+  background-color: #7cffc4;
+  border: none;
+}
+
+#features li {
+  margin-bottom: 10px;
+}
