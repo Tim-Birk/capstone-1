@@ -10,6 +10,10 @@ except Exception as e:
 from sqlalchemy.exc import IntegrityError
 import os
 
+# Account for secret keys being undefined on heroku
+SECRET_KEY = SECRET_KEY if SECRET_KEY else 'fake_key_string'
+MAPBOX_ACCESS_TOKEN = MAPBOX_ACCESS_TOKEN if MAPBOX_ACCESS_TOKEN else 'fake_key_string'
+
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql:///restroom-finder')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -24,10 +28,6 @@ app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 # debug = DebugToolbarExtension(app)
 
 CURR_USER_KEY = "curr_user"
-
-# Account for secret keys being undefined on heroku
-SECRET_KEY = SECRET_KEY if SECRET_KEY else 'fake_key_string'
-MAPBOX_ACCESS_TOKEN = MAPBOX_ACCESS_TOKEN if MAPBOX_ACCESS_TOKEN else 'fake_key_string'
 
 @app.before_request
 def add_user_to_g():
