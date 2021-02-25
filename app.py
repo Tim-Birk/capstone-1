@@ -11,11 +11,14 @@ from sqlalchemy.exc import IntegrityError
 import os
 
 # Account for secret keys being undefined on heroku
-if SECRET_KEY:
+try:
     os.environ['SECRET_KEY'] = SECRET_KEY
-
-if SECRET_KEY:
+except Exception as e:
+    print(e)
+try:    
     os.environ['MAPBOX_ACCESS_TOKEN'] = MAPBOX_ACCESS_TOKEN
+except Exception as e:
+    print(e)
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql:///restroom-finder')
