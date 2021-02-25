@@ -16,7 +16,7 @@ db.create_all()
 app.config['SECRET_KEY'] = SECRET_KEY
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 
-debug = DebugToolbarExtension(app)
+# debug = DebugToolbarExtension(app)
 
 CURR_USER_KEY = "curr_user"
 
@@ -236,7 +236,7 @@ def login_user():
 
         user = User.authenticate(email, password)
         if user:
-            flash(f"Welcome Back, {user.email}!", "success")
+            # flash(f"Welcome Back, {user.email}!", "success")
             do_login(user)
             return redirect(f'/search')
         else:

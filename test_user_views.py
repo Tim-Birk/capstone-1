@@ -50,7 +50,7 @@ class UserViewTestCase(TestCase):
             html = resp.get_data(as_text=True)
 
             self.assertEqual(resp.status_code, 200)
-            self.assertIn('<div id="search-container" class="col mt-3">', html)
+            self.assertIn('<div id="search-container" class="col mt-3 px-0">', html)
 
     def test_home_logged_out(self):
         """Does the home route display correct the html if the user is logged in"""
@@ -84,7 +84,7 @@ class UserViewTestCase(TestCase):
             html = resp.get_data(as_text=True)
 
             self.assertEqual(resp.status_code, 200)
-            self.assertIn('<div id="search-container" class="col mt-3">', html)
+            self.assertIn('<div id="search-container" class="col mt-3 px-0">', html)
 
     def test_login_form(self):
         """Does the add login route display correct the html"""
@@ -109,7 +109,7 @@ class UserViewTestCase(TestCase):
             html = resp.get_data(as_text=True)
 
             self.assertEqual(resp.status_code, 200)
-            self.assertIn('<div id="search-container" class="col mt-3">', html)
+            self.assertIn('<div id="search-container" class="col mt-3 px-0">', html)
 
     def test_logout(self):
         """Can user logout?"""
