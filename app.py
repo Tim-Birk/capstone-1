@@ -1,19 +1,42 @@
 from flask import Flask, redirect, render_template, flash, session, g, request, jsonify
 from flask_debugtoolbar import DebugToolbarExtension
+import requests
+import urllib.parse
 from models import db, connect_db, User, SavedSearch
 from forms import RegisterForm, LoginForm, UserEditForm
-from secrets import SECRET_KEY, MAPBOX_ACCESS_TOKEN
+
+try:
+    from secrets import SECRET_KEY, MAPBOX_ACCESS_TOKEN, GOOGLE_API_KEY
+except Exception as e:
+    print(e)
+
 from sqlalchemy.exc import IntegrityError
+import os
+
+# Account for secret keys being undefined on heroku
+try:
+    os.environ['SECRET_KEY'] = SECRET_KEY
+except Exception as e:
+    print(e)
+try:    
+    os.environ['MAPBOX_ACCESS_TOKEN'] = MAPBOX_ACCESS_TOKEN
+except Exception as e:
+    print(e)
+try:    
+    os.environ['GOOGLE_API_KEY'] = GOOGLE_API_KEY
+except Exception as e:
+    print(e)
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///restroom-finder'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql:///restroom-finder')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = True
 
 connect_db(app)
 db.create_all()
 
-app.config['SECRET_KEY'] = SECRET_KEY
+
+app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 
 # debug = DebugToolbarExtension(app)
@@ -69,7 +92,7 @@ def search_page():
 
     defaultSavedSearch = SavedSearch.get_default(g.user.id)
 
-    return render_template("/search.html", token=MAPBOX_ACCESS_TOKEN, default=defaultSavedSearch)
+    return render_template("/search.html", token=os.environ['MAPBOX_ACCESS_TOKEN'], default=defaultSavedSearch)
 
 ########################################################################################################
 # Saved Search Routes
@@ -277,5 +300,38 @@ def update_user(user_id):
     else:
         return render_template("/user-edit.html", form=form)
 
+########################################################################################################
+# External API routes
+@app.route("/api/places", methods=["POST"])
+def get_google_places_detail():
+    """Get google places detail for name, lat and lon that is fed as parameters
 
+    First:  Get place_id based on name, lat and lon parameters from Google Places endpoint for place_id
+    Second:  Get details based on place_id from Google Places endpoint for location details
+    """
+
+    if not g.user:
+        flash(f'You must be logged in to do that.', "error")
+        return redirect(f"/login")
+
+    name = urllib.parse.quote(request.json['name'])
+    lat = request.json['lat']
+    lon = request.json['lon']
+    key = os.environ['GOOGLE_API_KEY']
+
+    # get place_id to feed to second endpoint
+    place_id_url = f"https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input={name}&inputtype=textquery&fields=place_id&locationbias=circle:2000@{lat},{lon}&key={key}"
+    resp = requests.get(place_id_url)
+
+    # if no candiates return an empty object
+    if resp.json()['candidates'] == []:
+        return (jsonify(detail={}), 201)
+
+    place_id = resp.json()['candidates'][0]['place_id']
+    
+    # get additional detail based on place_id that will be returned in response
+    detail_url = f"https://maps.googleapis.com/maps/api/place/details/json?place_id={place_id}&fields=name,opening_hours,formatted_phone_number,business_status&key={key}"
+    resp_detail = requests.get(detail_url)
+
+    return (jsonify(detail=resp_detail.json()), 201)
 

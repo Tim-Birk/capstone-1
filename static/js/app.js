@@ -391,7 +391,7 @@ const getRestrooms = async (lat, lon) => {
   // get restroom listings from Refuge API
   return axios
     .get(
-      `https:\\www.refugerestrooms.org/api/v1/restrooms/by_location?lat=${lat}&lng=${lon}&ada=${$filterAccessible.is(
+      `https://www.refugerestrooms.org/api/v1/restrooms/by_location?lat=${lat}&lng=${lon}&ada=${$filterAccessible.is(
         ':checked'
       )}&unisex=${$filterUnisex.is(':checked')}&per_page=${per_page}`
     )
@@ -407,20 +407,15 @@ const getRestrooms = async (lat, lon) => {
           continue;
         }
 
-        // get place_id from top candidate to feed to details endpoint
-        const uri = encodeURI(
-          `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${restroom.name}&inputtype=textquery&fields=place_id&locationbias=circle:2000@${restroom.latitude},${restroom.longitude}&key=${GOOGLE_API_KEY}`
-        );
-        const placeResp = await axios.get(uri);
-        const place_id = placeResp.data.candidates[0].place_id;
+        const data = {
+          name: restroom.name,
+          lat: restroom.latitude,
+          lon: restroom.longitude,
+        };
 
-        // use place_id to get detail data from details endpoint
-        const detailUri = encodeURI(
-          `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place_id}&fields=name,opening_hours,formatted_phone_number,business_status&key=${GOOGLE_API_KEY}`
-        );
-        const detailResp = await axios.get(detailUri);
+        const detailResp = await axios.post('/api/places', data);
+        const details = detailResp.data.detail.result;
 
-        const details = detailResp.data.result;
         restroom.details = { ...details };
         restroom.list_number = RESTROOM_RESULTS.size + 1;
 
@@ -608,14 +603,13 @@ const setCurrentLocation = () => {
 
   if (!navigator.geolocation) {
     console.log('Geolocation is not supported by your browser');
-    initializeMap(CURRENT_LAT, CURRENT_LON);
   } else {
     navigator.geolocation.getCurrentPosition((pos) => {
       CURRENT_LAT = pos.coords.latitude;
       CURRENT_LON = pos.coords.longitude;
-      initializeMap(CURRENT_LAT, CURRENT_LON);
     });
   }
+  initializeMap(CURRENT_LAT, CURRENT_LON);
 };
 
 const initializeMap = (lat, lon) => {
@@ -843,7 +837,22 @@ const showEditSavedSearchModal = (savedSearch) => {
   $editChangingTable.prop('checked', changing_table);
 };
 
+const waitSetLocation = () => {
+  return new Promise((resolve, reject) => {
+    setCurrentLocation();
+    resolve();
+  });
+};
 // Initialize values
-$(setCurrentLocation());
-$(hideSidebarOnSmallerDevices());
-$(fillDefaultSearch());
+const initialize = () => {
+  waitSetLocation()
+    .then(() => {
+      hideSidebarOnSmallerDevices();
+      fillDefaultSearch();
+    })
+    .catch(() => {
+      hideSidebarOnSmallerDevices();
+    });
+};
+
+$(initialize());
