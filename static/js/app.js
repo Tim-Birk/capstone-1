@@ -391,7 +391,7 @@ const getRestrooms = async (lat, lon) => {
   // get restroom listings from Refuge API
   return axios
     .get(
-      `https:\\www.refugerestrooms.org/api/v1/restrooms/by_location?lat=${lat}&lng=${lon}&ada=${$filterAccessible.is(
+      `https://www.refugerestrooms.org/api/v1/restrooms/by_location?lat=${lat}&lng=${lon}&ada=${$filterAccessible.is(
         ':checked'
       )}&unisex=${$filterUnisex.is(':checked')}&per_page=${per_page}`
     )
