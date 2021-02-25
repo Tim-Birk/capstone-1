@@ -4,6 +4,7 @@ from models import db, connect_db, User, SavedSearch
 from forms import RegisterForm, LoginForm, UserEditForm
 from secrets import SECRET_KEY, MAPBOX_ACCESS_TOKEN
 from sqlalchemy.exc import IntegrityError
+import os
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///restroom-finder'
@@ -13,7 +14,7 @@ app.config['SQLALCHEMY_ECHO'] = True
 connect_db(app)
 db.create_all()
 
-app.config['SECRET_KEY'] = SECRET_KEY
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', SECRET_KEY)
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 
 # debug = DebugToolbarExtension(app)
@@ -69,7 +70,7 @@ def search_page():
 
     defaultSavedSearch = SavedSearch.get_default(g.user.id)
 
-    return render_template("/search.html", token=MAPBOX_ACCESS_TOKEN, default=defaultSavedSearch)
+    return render_template("/search.html", token=os.environ.get('MAPBOX_ACCESS_TOKEN', MAPBOX_ACCESS_TOKEN), default=defaultSavedSearch)
 
 ########################################################################################################
 # Saved Search Routes
