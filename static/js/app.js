@@ -407,20 +407,15 @@ const getRestrooms = async (lat, lon) => {
           continue;
         }
 
-        // get place_id from top candidate to feed to details endpoint
-        const uri = encodeURI(
-          `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${restroom.name}&inputtype=textquery&fields=place_id&locationbias=circle:2000@${restroom.latitude},${restroom.longitude}&key=${GOOGLE_API_KEY}`
-        );
-        const placeResp = await axios.get(uri);
-        const place_id = placeResp.data.candidates[0].place_id;
+        const data = {
+          name: restroom.name,
+          lat: restroom.latitude,
+          lon: restroom.longitude,
+        };
 
-        // use place_id to get detail data from details endpoint
-        const detailUri = encodeURI(
-          `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place_id}&fields=name,opening_hours,formatted_phone_number,business_status&key=${GOOGLE_API_KEY}`
-        );
-        const detailResp = await axios.get(detailUri);
+        const detailResp = await axios.post('/api/places', data);
+        const details = detailResp.data.detail.result;
 
-        const details = detailResp.data.result;
         restroom.details = { ...details };
         restroom.list_number = RESTROOM_RESULTS.size + 1;
 
