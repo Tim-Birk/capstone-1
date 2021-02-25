@@ -25,6 +25,10 @@ app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 
 CURR_USER_KEY = "curr_user"
 
+# Account for secret keys being undefined on heroku
+SECRET_KEY = SECRET_KEY if SECRET_KEY else 'fake_key_string'
+MAPBOX_ACCESS_TOKEN = MAPBOX_ACCESS_TOKEN if MAPBOX_ACCESS_TOKEN else 'fake_key_string'
+
 @app.before_request
 def add_user_to_g():
     """If logged in, add curr user to Flask global."""
