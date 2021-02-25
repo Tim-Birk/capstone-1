@@ -603,14 +603,13 @@ const setCurrentLocation = () => {
 
   if (!navigator.geolocation) {
     console.log('Geolocation is not supported by your browser');
-    initializeMap(CURRENT_LAT, CURRENT_LON);
   } else {
     navigator.geolocation.getCurrentPosition((pos) => {
       CURRENT_LAT = pos.coords.latitude;
       CURRENT_LON = pos.coords.longitude;
-      initializeMap(CURRENT_LAT, CURRENT_LON);
     });
   }
+  initializeMap(CURRENT_LAT, CURRENT_LON);
 };
 
 const initializeMap = (lat, lon) => {
@@ -838,7 +837,22 @@ const showEditSavedSearchModal = (savedSearch) => {
   $editChangingTable.prop('checked', changing_table);
 };
 
+const waitSetLocation = () => {
+  return new Promise((resolve, reject) => {
+    setCurrentLocation();
+    resolve();
+  });
+};
 // Initialize values
-$(setCurrentLocation());
-$(hideSidebarOnSmallerDevices());
-$(fillDefaultSearch());
+const initialize = () => {
+  waitSetLocation()
+    .then(() => {
+      hideSidebarOnSmallerDevices();
+      fillDefaultSearch();
+    })
+    .catch(() => {
+      hideSidebarOnSmallerDevices();
+    });
+};
+
+$(initialize());
