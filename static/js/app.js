@@ -104,9 +104,9 @@ $saveSearchModalButton.on('click', async (evt) => {
     changing_table,
   };
 
+  // add saved search to database
   const resp = await axios.post(`/search/add`, savedSearch);
   const newSavedSearch = resp.data.saved_search;
-  console.log(newSavedSearch);
 
   if (!newSavedSearch) {
     return;
@@ -144,7 +144,7 @@ $searchesList.on('click', 'a', async (evt) => {
 
   const resp = await axios.get(`/search/${search_id}`);
   const savedSearch = resp.data.saved_search;
-  console.log(savedSearch);
+
   populateSearchFilters(savedSearch);
   $('#wrapper').toggleClass('toggled');
 });
@@ -185,9 +185,9 @@ $editSavedSearchButton.on('click', async (evt) => {
     changing_table,
   };
 
+  // update saved search in database
   const resp = await axios.post(`/search/${id}`, savedSearch);
   const updatedSavedSearch = resp.data.saved_search;
-  console.log(updatedSavedSearch);
 
   if (!updatedSavedSearch) {
     return;
@@ -197,7 +197,7 @@ $editSavedSearchButton.on('click', async (evt) => {
   location.reload();
 });
 
-// delete search event handler for opening delete modal
+// delete search event handler for opening delete modal to confirm delete
 $saveSearchesContainer.on('click', '#saved-search-delete', async (evt) => {
   const id = $(evt.target).attr('data-search-id');
   if (!id) return;
@@ -217,6 +217,7 @@ $deleteSavedSearchButton.on('click', async (evt) => {
   location.reload();
 });
 
+// gets users default search from api and fills search form with saved search parameters
 const fillDefaultSearch = async () => {
   const search_id = $('#search-form').attr('data-default-id');
   if (!search_id) {
@@ -228,6 +229,7 @@ const fillDefaultSearch = async () => {
   populateSearchFilters(savedSearch);
 };
 
+// populates search filters with saved search
 const populateSearchFilters = (savedSearch) => {
   const {
     id,
@@ -277,6 +279,7 @@ const populateSearchFilters = (savedSearch) => {
   $saveSearchesContainer.append($savedSearchOptions);
 };
 
+// refreshes the map and shows/hides location search input based on useCurrentLocation checkbox value
 function handleUseCurrentLocationChange() {
   refreshMap(CURRENT_LAT, CURRENT_LON);
 
@@ -309,7 +312,7 @@ const handleGetSearchResults = async () => {
   $mapContainer.addClass('map-large');
   $mapElement.addClass('map-large');
 
-  await getRestrooms(coordinates.lat, coordinates.lon);
+  await getRestroomsDisplayResults(coordinates.lat, coordinates.lon);
 
   hideLoadingSpinner();
 
@@ -383,7 +386,8 @@ const getCoordinates = () => {
   return coords;
 };
 
-const getRestrooms = async (lat, lon) => {
+// Gets restroom info and displays map markers on map and search results in list
+const getRestroomsDisplayResults = async (lat, lon) => {
   // get extra results from api in case user requests changing table filter
   const extraResults = 10;
   const per_page = NUM_RESULTS + extraResults;
@@ -525,6 +529,7 @@ const clearMapMarkers = () => {
   }
 };
 
+// Fixes the map orientation when the map shifts to show the list results to the left of map on larger devices
 const adjustMapForDeviceSize = (lat, lon) => {
   // recenter the map to account for shift on larger devices
   if ($(window).width() > LG_SCREEN_BRKPT) {
@@ -603,13 +608,19 @@ const setCurrentLocation = () => {
 
   if (!navigator.geolocation) {
     console.log('Geolocation is not supported by your browser');
+    initializeMap(CURRENT_LAT, CURRENT_LON);
   } else {
-    navigator.geolocation.getCurrentPosition((pos) => {
-      CURRENT_LAT = pos.coords.latitude;
-      CURRENT_LON = pos.coords.longitude;
-    });
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        CURRENT_LAT = pos.coords.latitude;
+        CURRENT_LON = pos.coords.longitude;
+        initializeMap(CURRENT_LAT, CURRENT_LON);
+      },
+      () => {
+        initializeMap(CURRENT_LAT, CURRENT_LON);
+      }
+    );
   }
-  initializeMap(CURRENT_LAT, CURRENT_LON);
 };
 
 const initializeMap = (lat, lon) => {
@@ -641,7 +652,7 @@ const initializeMap = (lat, lon) => {
   el.style.width = '20px';
   el.style.height = '20px';
 
-  // add marker to map
+  // add current location marker to map
   new mapboxgl.Marker(el)
     .setLngLat([lon, lat])
     .setPopup(
@@ -697,6 +708,7 @@ const refreshMap = (lat, lon) => {
   adjustMapForDeviceSize(lat, lon);
 };
 
+// populates the modal that has the detail for restroom listing
 const showRestroomModal = (restroom) => {
   $('#restrooms-modal .modal-title').empty();
   $('#restrooms-modal .modal-body').empty();
@@ -807,6 +819,7 @@ const hideSidebarOnSmallerDevices = () => {
   }
 };
 
+// populates the modal with the saved search info to update
 const showEditSavedSearchModal = (savedSearch) => {
   const {
     id,
@@ -839,10 +852,15 @@ const showEditSavedSearchModal = (savedSearch) => {
 
 const waitSetLocation = () => {
   return new Promise((resolve, reject) => {
-    setCurrentLocation();
+    try {
+      setCurrentLocation();
+    } catch (e) {
+      console.log(e);
+    }
     resolve();
   });
 };
+
 // Initialize values
 const initialize = () => {
   waitSetLocation()

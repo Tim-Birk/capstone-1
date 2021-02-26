@@ -92,7 +92,7 @@ def search_page():
 
     defaultSavedSearch = SavedSearch.get_default(g.user.id)
 
-    return render_template("/search.html", token=os.environ['MAPBOX_ACCESS_TOKEN'], default=defaultSavedSearch)
+    return render_template("/search.html", token=os.environ['MAPBOX_ACCESS_TOKEN'], default=defaultSavedSearch, is_search=True)
 
 ########################################################################################################
 # Saved Search Routes
