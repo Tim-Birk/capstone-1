@@ -7,6 +7,7 @@ let MAP;
 let CURRENT_MARKERS = [];
 let RESTROOM_RESULTS = new Map();
 
+const $noLocation = $('#no-location-container');
 const $sidebar = $('#sidebar');
 const $saveSearchesContainer = $('#saved-searches-container');
 const $restroomContainer = $('#restroom-container');
@@ -609,15 +610,18 @@ const setCurrentLocation = () => {
   if (!navigator.geolocation) {
     console.log('Geolocation is not supported by your browser');
     initializeMap(CURRENT_LAT, CURRENT_LON);
+    $noLocation.show();
   } else {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         CURRENT_LAT = pos.coords.latitude;
         CURRENT_LON = pos.coords.longitude;
         initializeMap(CURRENT_LAT, CURRENT_LON);
+        $noLocation.hide();
       },
       () => {
         initializeMap(CURRENT_LAT, CURRENT_LON);
+        $noLocation.show();
       }
     );
   }

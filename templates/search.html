@@ -11,6 +11,11 @@
     endif
     %}
   >
+    <div class="form-group m-0" id="no-location-container">
+      <small id="no-location" class="text-danger"
+        ><i>*current location not available in browser</i></small
+      >
+    </div>
     <div
       id="saved-searches-container"
       class="row d-flex align-items-center justify-content-between mb-2"
@@ -32,7 +37,6 @@
         </div>
       </div>
     </div>
-
     <div class="form-group collapse" id="location-search-container">
       <div id="geocoder" class="geocoder"></div>
     </div>
