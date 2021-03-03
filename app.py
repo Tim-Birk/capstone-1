@@ -241,7 +241,7 @@ def show_register_form():
         flash(f'Welcome!  Your new account has been created for {new_user.email}', "success")
         return redirect(f'/search')
     else:
-        return render_template("register.html", form=form)
+        return render_template("register.html", form=form, check_email=True)
 
 @app.route("/login", methods=["GET","POST"])
 def login_user():
@@ -265,7 +265,7 @@ def login_user():
         else:
             form.email.errors = ['Invalid email/password.']
 
-    return render_template('login.html', form=form)
+    return render_template('login.html', form=form, check_email=True)
 
 @app.route('/logout')
 def logout_user():
