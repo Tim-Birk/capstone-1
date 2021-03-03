@@ -6,8 +6,8 @@ let GEOCODER;
 let MAP;
 let CURRENT_MARKERS = [];
 let RESTROOM_RESULTS = new Map();
+let HAS_LOCATION = false;
 
-const $noLocation = $('#no-location-container');
 const $sidebar = $('#sidebar');
 const $saveSearchesContainer = $('#saved-searches-container');
 const $restroomContainer = $('#restroom-container');
@@ -15,7 +15,6 @@ const $mobileSpinnerContainer = $('#mobile-spinner-container');
 const $spinnerContainer = $('#spinner-container');
 const $searchesList = $('#searches-list');
 const $toggleSavedSearchesButton = $('#menu-toggle');
-const $useCurrentLocation = $('#use-current-location');
 const $saveSearchCheckbox = $('#save-search');
 const $saveSearchModalButton = $('#save-search-button');
 const $searchName = $('#search-name');
@@ -38,25 +37,21 @@ const $editAccessible = $('#edit-accessible');
 const $editUnisex = $('#edit-unisex');
 const $editChangingTable = $('#edit-changing-table');
 
-// use current location checkbox event handler
-$useCurrentLocation.on('click', handleUseCurrentLocationChange);
-
-// save search checkbox event handler
-$saveSearchCheckbox.on('change', (evt) => {
-  if ($(evt.target)[0].checked) {
-    $searchButton.attr('data-target', '#saved-search-modal');
-  } else {
-    $searchButton.attr('data-target', '');
-  }
-});
-
 // search button event handler
 $searchButton.on('click', (evt) => {
   evt.preventDefault();
 
+  if (!GEOCODER.inputString || !GEOCODER.lastSelected) {
+    $searchButton.attr('data-target', '');
+    alert('Please enter a location to search.');
+    return;
+  }
   if ($saveSearchCheckbox.is(':checked')) {
+    $searchButton.attr('data-target', '#saved-search-modal');
     $searchName.val('');
     return;
+  } else {
+    $searchButton.attr('data-target', '');
   }
   handleGetSearchResults();
 });
@@ -78,7 +73,7 @@ $saveSearchModalButton.on('click', async (evt) => {
   }
 
   const name = $searchName.val();
-  const use_current_location = $useCurrentLocation.is(':checked');
+  const use_current_location = false; //deprecated so hardcode to false
   const coordinates = getCoordinates();
   const lon = coordinates.lon;
   const lat = coordinates.lat;
@@ -238,15 +233,15 @@ const populateSearchFilters = (savedSearch) => {
     accessible,
     unisex,
     changing_table,
-    use_current_location,
     location_search_string,
+    lat,
+    lon,
   } = savedSearch;
 
-  $useCurrentLocation.prop('checked', use_current_location);
-  handleUseCurrentLocationChange();
-
   if (location_search_string) {
+    refreshMap(lat, lon);
     GEOCODER.query(location_search_string);
+    GEOCODER.inputString = location_search_string;
   }
 
   $filterAccessible.prop('checked', accessible);
@@ -279,17 +274,6 @@ const populateSearchFilters = (savedSearch) => {
 
   $saveSearchesContainer.append($savedSearchOptions);
 };
-
-// refreshes the map and shows/hides location search input based on useCurrentLocation checkbox value
-function handleUseCurrentLocationChange() {
-  refreshMap(CURRENT_LAT, CURRENT_LON);
-
-  if ($useCurrentLocation.is(':checked')) {
-    $locationSearchContainer.addClass('collapse');
-  } else {
-    $locationSearchContainer.removeClass('collapse');
-  }
-}
 
 const handleGetSearchResults = async () => {
   // clear previous search results
@@ -377,7 +361,7 @@ const getCoordinates = () => {
   };
 
   // if Use Current Location is not checked, use mapbox last search result
-  if (!$useCurrentLocation.is(':checked') && GEOCODER.lastSelected) {
+  if (GEOCODER.lastSelected) {
     let result = JSON.parse(GEOCODER.lastSelected);
     const { coordinates } = result.geometry;
     coords.lat = coordinates[1];
@@ -602,32 +586,33 @@ const addRestroomLiToDOM = (restroom) => {
   $searchResults.append(li);
 };
 
-const setCurrentLocation = () => {
+const setCurrentLocation = async () => {
   // Initialize default coordinates (White House)
   CURRENT_LAT = 38.897957;
   CURRENT_LON = -77.03656;
+  HAS_LOCATION = false;
 
   if (!navigator.geolocation) {
     console.log('Geolocation is not supported by your browser');
-    initializeMap(CURRENT_LAT, CURRENT_LON);
-    $noLocation.show();
+    await initializeMap(CURRENT_LAT, CURRENT_LON);
   } else {
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
+      async (pos) => {
         CURRENT_LAT = pos.coords.latitude;
         CURRENT_LON = pos.coords.longitude;
-        initializeMap(CURRENT_LAT, CURRENT_LON);
-        $noLocation.hide();
+        HAS_LOCATION = true;
+        await initializeMap(CURRENT_LAT, CURRENT_LON);
+        fillDefaultSearch();
       },
-      () => {
-        initializeMap(CURRENT_LAT, CURRENT_LON);
-        $noLocation.show();
+      async () => {
+        await initializeMap(CURRENT_LAT, CURRENT_LON);
+        fillDefaultSearch();
       }
     );
   }
 };
 
-const initializeMap = (lat, lon) => {
+const initializeMap = async (lat, lon) => {
   $geocoderDiv.empty();
 
   MAP = new mapboxgl.Map({
@@ -648,23 +633,12 @@ const initializeMap = (lat, lon) => {
 
   document.getElementById('geocoder').appendChild(GEOCODER.onAdd(MAP));
 
-  var el = document.createElement('div');
-  el.className = 'marker';
-  el.innerHTML = '<i class="fas fa-map-marker-alt"></i>';
-  el.style.backgroundColor = 'orange';
-  el.style.color = '#fff';
-  el.style.width = '20px';
-  el.style.height = '20px';
-
-  // add current location marker to map
-  new mapboxgl.Marker(el)
-    .setLngLat([lon, lat])
-    .setPopup(
-      new mapboxgl.Popup().setHTML(
-        `<p class="popup-title">Current Location</p>`
-      )
-    )
-    .addTo(MAP);
+  if (HAS_LOCATION) {
+    // get reverse gecode search string to input into search box
+    const resp = await axios.post('/api/reverse-geocode', { lat, lon });
+    const location_search_string = resp.data.result;
+    GEOCODER.query(location_search_string);
+  }
 
   var layerList = document.getElementById('menu');
   var inputs = layerList.getElementsByTagName('input');
@@ -691,23 +665,6 @@ const refreshMap = (lat, lon) => {
   });
 
   document.getElementById('geocoder').appendChild(GEOCODER.onAdd(MAP));
-  var el = document.createElement('div');
-  el.className = 'marker';
-  el.innerHTML = '<i class="fas fa-map-marker-alt"></i>';
-  el.style.backgroundColor = 'orange';
-  el.style.color = '#fff';
-  el.style.width = '20px';
-  el.style.height = '20px';
-
-  // add marker to map
-  new mapboxgl.Marker(el)
-    .setLngLat([lon, lat])
-    .setPopup(
-      new mapboxgl.Popup().setHTML(
-        `<p class="popup-title">Current Location</p>`
-      )
-    )
-    .addTo(MAP);
 
   adjustMapForDeviceSize(lat, lon);
 };
@@ -854,27 +811,10 @@ const showEditSavedSearchModal = (savedSearch) => {
   $editChangingTable.prop('checked', changing_table);
 };
 
-const waitSetLocation = () => {
-  return new Promise((resolve, reject) => {
-    try {
-      setCurrentLocation();
-    } catch (e) {
-      console.log(e);
-    }
-    resolve();
-  });
-};
-
 // Initialize values
 const initialize = () => {
-  waitSetLocation()
-    .then(() => {
-      hideSidebarOnSmallerDevices();
-      fillDefaultSearch();
-    })
-    .catch(() => {
-      hideSidebarOnSmallerDevices();
-    });
+  setCurrentLocation();
+  hideSidebarOnSmallerDevices();
 };
 
 $(initialize());
