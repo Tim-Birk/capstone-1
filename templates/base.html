@@ -92,14 +92,39 @@
         <div class="sidebar-heading">Saved Searches</div>
         <div id="searches-list" class="list-group list-group-flush">
           {% for search in g.user.searches %}
-          <a
-            href="#"
-            class="list-group-item list-group-item-action bg-light"
-            data-search-id="{{search.id}}"
+          <div
+            class="list-group-item list-group-item-action bg-light d-flex justify-content-between align-items-center"
           >
-            {{search.name}}
-          </a>
-
+            <a
+              href="#"
+              class="list-group-item-action bg-light search-item"
+              data-search-id="{{search.id}}"
+            >
+              {{search.name}}
+            </a>
+            <div class="d-flex justify-content-end">
+              <a
+                id="saved-search-edit"
+                class="dropdown-item text-primary px-0 ml-3"
+                data-toggle="modal"
+                data-target="#edit-saved-search-modal"
+                data-search-id="{{search.id}}"
+                href="#"
+              >
+                <i class="fas fa-pencil-alt" data-search-id="{{search.id}}"></i>
+              </a>
+              <a
+                id="saved-search-delete"
+                class="dropdown-item text-danger px-0 ml-3"
+                data-toggle="modal"
+                data-target="#delete-saved-search-modal"
+                data-search-id="{{search.id}}"
+                href="#"
+              >
+                <i class="fas fa-trash" data-search-id="{{search.id}}"></i>
+              </a>
+            </div>
+          </div>
           {% endfor %}
         </div>
       </div>
