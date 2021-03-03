@@ -25,9 +25,6 @@ An application to provide safe restroom access for transgender, intersex and gen
 
 - Backend: Python, Flask, PostgreSQL, SQLAlchemy
 - Frontend: JavaScript, AJAX, HTML, CSS, Bootstrap
-<<<<<<< HEAD
-- Testing: Unit and Integration tests written with Python 'unittest' Framework
-=======
 - Testing: Unit and Integration test written with Python 'unittest' Framework
 
 ## Run Locally
@@ -117,4 +114,3 @@ $ source venv/Scripts/activate
 5. Accessing a save search with side pop-out menut:
 
    ![Adding a saved search](/screenshots/saved-searches.PNG)
->>>>>>> development
