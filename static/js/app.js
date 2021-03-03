@@ -113,13 +113,39 @@ $saveSearchModalButton.on('click', async (evt) => {
 
   // add saved search to sidebar list
   const searchListItem = $(`
-  <a
-    href="#"
-    class="list-group-item list-group-item-action bg-light"
-    data-search-id="${newSavedSearch.id}"
+  <div
+    class="list-group-item list-group-item-action bg-light d-flex justify-content-between align-items-center"
   >
-    ${newSavedSearch.name}
-  </a>
+    <a
+      href="#"
+      class="list-group-item-action bg-light search-item"
+      data-search-id="${newSavedSearch.id}"
+    >
+      ${newSavedSearch.name}
+    </a>
+    <div class="d-flex justify-content-end">
+      <a
+        id="saved-search-edit"
+        class="dropdown-item text-primary px-0 ml-3"
+        data-toggle="modal"
+        data-target="#edit-saved-search-modal"
+        data-search-id="${newSavedSearch.id}"
+        href="#"
+      >
+        <i class="fas fa-pencil-alt" data-search-id="${newSavedSearch.id}"></i>
+      </a>
+      <a
+        id="saved-search-delete"
+        class="dropdown-item text-danger px-0 ml-3"
+        data-toggle="modal"
+        data-target="#delete-saved-search-modal"
+        data-search-id="${newSavedSearch.id}"
+        href="#"
+      >
+        <i class="fas fa-trash" data-search-id="${newSavedSearch.id}"></i>
+      </a>
+    </div>
+  </div>
 `);
 
   $searchesList.append(searchListItem);
@@ -142,11 +168,14 @@ $searchesList.on('click', 'a', async (evt) => {
   const savedSearch = resp.data.saved_search;
 
   populateSearchFilters(savedSearch);
+});
+
+$('#sidebar-wrapper').on('click', async (evt) => {
   $('#wrapper').toggleClass('toggled');
 });
 
 // saved search event handler for opening edit/delete modal
-$saveSearchesContainer.on('click', '#saved-search-edit', async (evt) => {
+$searchesList.on('click', '#saved-search-edit', async (evt) => {
   const id = $(evt.target).attr('data-search-id');
   if (!id) return;
   const resp = await axios.get(`/search/${id}`);
@@ -194,7 +223,7 @@ $editSavedSearchButton.on('click', async (evt) => {
 });
 
 // delete search event handler for opening delete modal to confirm delete
-$saveSearchesContainer.on('click', '#saved-search-delete', async (evt) => {
+$searchesList.on('click', '#saved-search-delete', async (evt) => {
   const id = $(evt.target).attr('data-search-id');
   if (!id) return;
   $('#delete-saved-search-modal').attr('data-search-id', id);
@@ -247,32 +276,6 @@ const populateSearchFilters = (savedSearch) => {
   $filterAccessible.prop('checked', accessible);
   $filterUnisex.prop('checked', unisex);
   $filterChangingTable.prop('checked', changing_table);
-
-  const $savedSearchOptions = `
-        <div class="col dropdown d-flex flex-md-row-reverse">
-          <button
-            class="btn btn-sm btn-secondary dropdown-toggle"
-            type="button"
-            id="saved-search-options"
-            data-toggle="dropdown"
-            aria-haspopup="true"
-            aria-expanded="false"
-          >
-            ${name}
-          </button>
-          <div class="dropdown-menu" aria-labelledby="saved-search-options">
-              <a id="saved-search-edit" class="dropdown-item text-primary" data-toggle="modal" data-target="#edit-saved-search-modal" data-search-id="${id}" href="#">
-                Edit
-              </a>
-              <a id="saved-search-delete" class="dropdown-item text-danger" data-toggle="modal" data-target="#delete-saved-search-modal"data-search-id="${id}" href="#">
-                Delete
-              </a>
-            </div>
-          </div>
-        </div>
-      `;
-
-  $saveSearchesContainer.append($savedSearchOptions);
 };
 
 const handleGetSearchResults = async () => {
