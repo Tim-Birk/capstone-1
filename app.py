@@ -335,3 +335,29 @@ def get_google_places_detail():
 
     return (jsonify(detail=resp_detail.json()), 201)
 
+@app.route("/api/reverse-geocode", methods=["POST"])
+def get_reverse_geocode_result():
+    """Get top mapbox result for coordinates"""
+
+    if not g.user:
+        flash(f'You must be logged in to do that.', "error")
+        return redirect(f"/login")
+
+    lat = request.json['lat']
+    lon = request.json['lon']
+    key = os.environ['MAPBOX_ACCESS_TOKEN']
+
+    mapbox_id_url = f"https://api.mapbox.com/geocoding/v5/mapbox.places/{lon},{lat}.json?worldview=cn&access_token={key}"
+    resp = requests.get(mapbox_id_url)
+
+    # if no candiates return an empty object
+    if resp.json()['features'] == []:
+        return (jsonify(detail={}), 200)
+
+    try:
+        result = resp.json()['features'][0]['place_name']
+        return (jsonify(result=result), 200)
+    except e as exception:
+        return (jsonify(detail={}), 200)
+    
+

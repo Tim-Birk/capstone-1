@@ -11,11 +11,6 @@
     endif
     %}
   >
-    <div class="form-group m-0" id="no-location-container">
-      <small id="no-location" class="text-danger"
-        ><i>*current location not available in browser</i></small
-      >
-    </div>
     <div
       id="saved-searches-container"
       class="row d-flex align-items-center justify-content-between mb-2"
@@ -24,20 +19,9 @@
         <button class="btn btn-sm btn-info" type="button" id="menu-toggle">
           Saved Searches
         </button>
-        <div class="form-group form-check ml-2 mb-0">
-          <input
-            type="checkbox"
-            class="form-check-input"
-            id="use-current-location"
-            checked
-          />
-          <label class="form-check-label" for="use-current-location"
-            >Use Current Location</label
-          >
-        </div>
       </div>
     </div>
-    <div class="form-group collapse" id="location-search-container">
+    <div class="form-group" id="location-search-container">
       <div id="geocoder" class="geocoder"></div>
     </div>
 
