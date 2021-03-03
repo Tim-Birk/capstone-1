@@ -25,4 +25,96 @@ An application to provide safe restroom access for transgender, intersex and gen
 
 - Backend: Python, Flask, PostgreSQL, SQLAlchemy
 - Frontend: JavaScript, AJAX, HTML, CSS, Bootstrap
+<<<<<<< HEAD
 - Testing: Unit and Integration tests written with Python 'unittest' Framework
+=======
+- Testing: Unit and Integration test written with Python 'unittest' Framework
+
+## Run Locally
+
+In order to run the app locally, you will need to obtain an API key for the [Google Maps Platform](https://developers.google.com/maps/documentation/places/web-service/get-api-key) and an access token for [Mapbox](https://docs.mapbox.com/help/glossary/access-token).
+
+1. Clone repository:
+
+```
+$ git clone https://github.com/Tim-Birk/capstone-1.git
+```
+
+2. Navigate into directory:
+
+```
+$ cd capstone-1
+```
+
+3. Add secrets.py file to use API keys locally:
+
+```
+$ touch secrets.py
+```
+
+4. Add keys to secrets.py file
+
+```
+SECRET_KEY = '[Your Own Secret Key]'
+MAPBOX_ACCESS_TOKEN = '[Your Mapbox Access Token]'
+GOOGLE_API_KEY = '[Your Google API Key]'
+```
+
+5. Create python virtual environment (I use windows):
+
+```
+$ python -m venv venv
+```
+
+6. Activate virtual environment:
+
+```
+$ source venv/Scripts/activate
+```
+
+7. Install python packages:
+
+```
+(venv) $ pip install -r requirements.txt
+```
+
+8. Create PostgresSQL database:
+
+```
+(venv) $ createdb restroom-finder
+```
+
+9. Run seed.py file to create database tables
+
+```
+(venv) $ python seed.py
+```
+
+10. Run application:
+
+```
+(venv) $ flask run
+```
+
+## UI Screenshots
+
+1. Landing page:
+
+   ![Landing Page](/screenshots/landing.PNG)
+
+2. Main search page:
+
+   ![Main Search Page](/screenshots/main-search-popup.PNG)
+
+3. Additional detail if "More" is clicked:
+
+   ![Additional detail displayed](/screenshots/additional-detail.PNG)
+
+4. Adding a Saved Search:
+
+   ![Adding a saved search](/screenshots/save-search.PNG)
+
+5. Accessing a save search with side pop-out menut:
+
+   ![Adding a saved search](/screenshots/saved-searches.PNG)
+>>>>>>> development
