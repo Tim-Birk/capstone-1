@@ -64,6 +64,7 @@
   border-radius: 0.35rem;
 }
 
+/* formats map and list results when side by side on larger screens */
 @media (min-width: 768px) {
   #search-results {
     max-height: 425px;
@@ -93,5 +94,24 @@
     -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.2);
     box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.2);
     background-color: #aeadad;
+  }
+}
+
+/* Adjust height of map and results for larger (1 list result = 150px)  */
+@media (min-height: 800px) {
+  #search-results {
+    max-height: 575px;
+  }
+  #map {
+    height: 550px !important;
+  }
+}
+
+@media (min-height: 950px) {
+  #search-results {
+    max-height: 725px;
+  }
+  #map {
+    height: 700px !important;
   }
 }
