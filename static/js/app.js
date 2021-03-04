@@ -167,6 +167,7 @@ $searchesList.on('click', 'a', async (evt) => {
   const resp = await axios.get(`/search/${search_id}`);
   const savedSearch = resp.data.saved_search;
 
+  clearMapMarkers();
   populateSearchFilters(savedSearch);
 });
 
@@ -419,13 +420,21 @@ const getRestroomsDisplayResults = async (lat, lon) => {
         // add to search results list
         addRestroomLiToDOM(restroom);
 
-        // after 3 results are added, hide spinner
-        if (RESTROOM_RESULTS.size === 3) {
+        // after visible results are added, hide spinner
+        let visibleResults = 3; // Default height shows 3 results
+        if ($(window).height() > 950) {
+          visibleResults = 5; // Largest height shows 5 results
+        } else if ($(window).height() > 800) {
+          visibleResults = 4; // Medium height shows 4 results
+        }
+
+        if (RESTROOM_RESULTS.size === visibleResults) {
           hideLoadingSpinner();
         }
 
         // check if requested number of results has been met
         if (RESTROOM_RESULTS.size === NUM_RESULTS) {
+          hideLoadingSpinner();
           break;
         }
       }
@@ -578,9 +587,9 @@ const addRestroomLiToDOM = (restroom) => {
         ${changing_table ? '<i class="fas fa-baby"></i>' : ''}
       </div>
       <div class="col mt-1">
-        <div class="float-right float-md-left float-xl-right">
+        <div class="float-right float-md-left float-xl-right mt-1">
           <a href="#" class="btn btn-sm btn-primary text-small" data-toggle="modal" data-target="#restrooms-modal" data-restroom-id="${id}">More</a>
-          <a href="http://www.google.com/maps/place/${latitude},${longitude}" target="blank" class="btn btn-sm btn-info text-small" data-restroom-id="${id}">Directions</a>
+          <a href="http://www.google.com/maps/place/${latitude},${longitude}" target="blank" class="btn btn-sm btn-info text-small ml-1" data-restroom-id="${id}">Directions</a>
         </div>
       </div>
     </div>
@@ -657,6 +666,9 @@ const initializeMap = async (lat, lon) => {
 };
 
 const refreshMap = (lat, lon) => {
+  if (GEOCODER.mapMarker) {
+    GEOCODER.mapMarker.remove();
+  }
   $geocoderDiv.empty();
 
   MAP.center = [lon, lat];

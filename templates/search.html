@@ -6,7 +6,8 @@
     {%
     if
     default
-    %}data-default-id="{{default.id}}"
+    %}
+    data-default-id="{{default.id}}"
     {%
     endif
     %}
@@ -35,7 +36,7 @@
             value="accessible"
           />
           <label class="form-check-label" for="accessible"
-            >Accessible <i class="fas fa-wheelchair"></i
+            >Accessible <i class="fas fa-wheelchair ml-1"></i
           ></label>
         </div>
         <div class="form-check form-check-inline">
@@ -46,7 +47,7 @@
             value="unisex"
           />
           <label class="form-check-label" for="unisex"
-            >Unisex <i class="fas fa-genderless"></i
+            >Unisex <i class="fas fa-genderless ml-1"></i
           ></label>
         </div>
         <div class="form-check form-check-inline">
@@ -57,7 +58,7 @@
             value="changing-table"
           />
           <label class="form-check-label" for="changing-table"
-            >Changing Table <i class="fas fa-baby"></i
+            >Changing Table <i class="fas fa-baby ml-1"></i
           ></label>
         </div>
       </div>
@@ -88,10 +89,10 @@
     </div>
   </div>
 
-  <div id="mobile-spinner-container" class="mb-3"></div>
+  <div id="mobile-spinner-container"></div>
   <div
     id="restroom-container"
-    class="row d-flex flex-column-reverse flex-md-row"
+    class="row d-flex flex-column-reverse flex-md-row mt-2"
   >
     <div id="results-container" class="col pr-md-0">
       <div id="spinner-container"></div>
