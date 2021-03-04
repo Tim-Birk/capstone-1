@@ -49,7 +49,7 @@ $ cd capstone-1
 $ touch secrets.py
 ```
 
-4. Add keys to secrets.py file
+4. Add keys to secrets.py file:
 
 ```
 SECRET_KEY = '[Your Own Secret Key]'
@@ -81,7 +81,7 @@ $ source venv/Scripts/activate
 (venv) $ createdb restroom-finder
 ```
 
-9. Run seed.py file to create database tables
+9. Run seed.py file to create database tables:
 
 ```
 (venv) $ python seed.py
@@ -107,10 +107,10 @@ $ source venv/Scripts/activate
 
    ![Additional detail displayed](/screenshots/additional-detail.PNG)
 
-4. Adding a Saved Search:
+4. Adding a saved search:
 
    ![Adding a saved search](/screenshots/save-search.PNG)
 
-5. Accessing a save search with side pop-out menut:
+5. Accessing a saved search with side pop-out menut:
 
    ![Adding a saved search](/screenshots/saved-searches.PNG)
